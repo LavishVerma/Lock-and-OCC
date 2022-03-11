@@ -45,6 +45,7 @@ public class AccountManager {
 			}
 		}
 		System.out.println("WriteAccount balance -> "+balance);
+		System.out.println("Total Amount  -- "+getTotalAmountInBank());
 		 TransactionServer.accountManager.getAccounts();
 	}
     
@@ -56,6 +57,14 @@ public class AccountManager {
     	
      return	this.accounts.stream().filter(each -> each.getAccountNumber() == accountNumber).findFirst().get();
     	
+    }
+    
+    public int getTotalAmountInBank() {  
+    	 int sum = this.accounts.stream().mapToInt(ob -> ob.getBalance())
+    			 .reduce(0,
+    			 (element1, element2) -> element1 + element2 );
+    	
+         return sum;
     }
 	
 	
