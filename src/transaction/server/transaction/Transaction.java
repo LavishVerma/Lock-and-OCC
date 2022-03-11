@@ -47,6 +47,7 @@ public class Transaction {
 		}
 		TransactionServer.accountManager.writeAccount(accountNumber, balance);
 		writeSet.put(accountNumber, balance);
+		System.out.println(TransactionServer.accountManager.getAccounts());
 		return accountNumber;
 	}
 	

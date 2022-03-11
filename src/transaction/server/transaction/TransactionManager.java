@@ -76,7 +76,7 @@ public class TransactionManager {
 				try {
 					
 					Message message = (Message) ois.readObject();
-					System.out.println("In SERVER - " + message.getMessageID());
+					
 					if (message != null) {
 						if (message.getMessageID() == MessageTypes.OPEN_TRANSACTION) {
 							System.out.println("OPEN_TRANSACTION  " + message);

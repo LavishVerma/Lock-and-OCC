@@ -130,7 +130,7 @@ public class TransactionClient extends Thread {
                  }
                  
                   balance = transaction.readTransaction(accountTo);
-                  transaction.writeTransaction(accountFrom,balance + amount);
+                  transaction.writeTransaction(accountTo,balance + amount);
                   
                   returnStatus = transaction.closeTransaction();
      
