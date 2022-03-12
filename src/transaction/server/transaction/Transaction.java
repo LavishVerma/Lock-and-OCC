@@ -26,6 +26,7 @@ public class Transaction {
 	}
 
 	public int read(int accountNumber) {
+		log.append("Reading account Number -> "+ accountNumber);
 		Integer balance;
 		balance = writeSet.get(accountNumber);
 
@@ -40,6 +41,7 @@ public class Transaction {
 	}
 
 	public int write(int accountNumber, int balance) {
+		log.append("Writing "+ balance+" into Account Number -> "+ accountNumber);
 		int priorBalance = read(accountNumber);
 
 		if (!writeSet.containsKey(accountNumber)) {
@@ -65,9 +67,7 @@ public class Transaction {
 		return transactionNumber;
 	}
 
-	public void setTransactionNumber(int transactionNumber) {
-		this.transactionNumber = transactionNumber;
-	}
+	
 
 	public ArrayList<Integer> getReadSet() {
 		return readSet;

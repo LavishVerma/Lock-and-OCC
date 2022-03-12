@@ -8,6 +8,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import transaction.common.Message;
 import transaction.common.MessageTypes;
@@ -19,7 +21,7 @@ public class TransactionManager {
 	private ArrayList<Transaction> Abortedtransactions = new ArrayList<>();
 	private ArrayList<Transaction> Runningtransactions = new ArrayList<>();
 	private HashMap<Integer, Transaction> committedTransaction = new HashMap<>();
-
+     private Lock lock = new ReentrantLock();
 	public boolean validateTransaction(Transaction transaction) {
 		return true;
 	}
@@ -57,7 +59,7 @@ public class TransactionManager {
 		}
 		@Override
         public void run() {
-			 
+			 lock.lock();
 			// Read/Write from server TransactionID
 			try {
 				oos = new ObjectOutputStream(new BufferedOutputStream(client.getOutputStream()));
@@ -113,8 +115,11 @@ public class TransactionManager {
 					e.printStackTrace();
 				}
 				
+				
 			
 			}
+			
+			lock.unlock();
 			
 	 }
 	}

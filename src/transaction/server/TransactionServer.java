@@ -101,6 +101,7 @@ public class TransactionServer implements Runnable {
 		while (keepgoing) {
 			try {
 				transactionManager.runTransaction(serverSocket.accept());
+System.out.println("Work is done for one thread!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 			} catch (SocketException e) {
 				System.out.println("SocketException");
