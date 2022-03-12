@@ -8,120 +8,123 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import transaction.common.Message;
 import transaction.common.MessageTypes;
 import transaction.server.TransactionServer;
 
 public class TransactionManager {
-	
-	private static int transactionIdCounter = 0 ;
+
+	private static int transactionIdCounter = 1;
 	private ArrayList<Transaction> Abortedtransactions = new ArrayList<>();
 	private ArrayList<Transaction> Runningtransactions = new ArrayList<>();
 	private HashMap<Integer, Transaction> committedTransaction = new HashMap<>();
-     private Lock lock = new ReentrantLock();
+
 	public boolean validateTransaction(Transaction transaction) {
 		return true;
 	}
 
 	public void writeTransaction(Transaction transaction) {
 	}
+
 	public ArrayList<Transaction> getAbortedtransactions() {
 		return Abortedtransactions;
 	}
 
-
 	public int getTransactionIdCounter() {
 		return transactionIdCounter;
 	}
+
 	public void runTransaction(Socket client) {
-		
+
+		// Creating a new Thread on receiving a new Socket Request.
 		Thread currentThread;
-		
+
 		currentThread = new TransactionManagerWorker(client);
 		currentThread.start();
-		
-		
 
 	}
-	
+
 	public class TransactionManagerWorker extends Thread {
-		
+
 		Socket client;
 		ObjectOutputStream oos = null;
 		ObjectInputStream ois = null;
 		Transaction transaction = null;
-		
+		private boolean isShutdown = false;
+
+		public boolean getIsShutdown() {
+			return isShutdown;
+		}
+
 		public TransactionManagerWorker(Socket client) {
 			this.client = client;
 		}
+
 		@Override
-        public void run() {
-			 lock.lock();
+		public void run() {
+
+			++transactionIdCounter;
+
 			// Read/Write from server TransactionID
 			try {
+				TransactionServer.lockManager.setLock();
 				oos = new ObjectOutputStream(new BufferedOutputStream(client.getOutputStream()));
 				ois = new ObjectInputStream(new BufferedInputStream(client.getInputStream()));
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
+
 				e1.printStackTrace();
 			}
-			
-		    
-		    
-			//Keeps ruuning until we receive the close request.
-			while(true) {
 
+			// Keeps ruuning until we receive the close request.
+			while (true) {
 
 				try {
-					
+
 					Message message = (Message) ois.readObject();
-					
+
 					if (message != null) {
+
 						if (message.getMessageID() == MessageTypes.OPEN_TRANSACTION) {
-							System.out.println("OPEN_TRANSACTION  " + message);
+							System.err.println("OPEN_TRANSACTION");
 							transaction = new Transaction();
-						
+							Runningtransactions.add(transaction);
 							oos.writeObject(transaction.getTransactionID());
 							oos.flush();
-							System.out.println("transaction.getTransactionID()--"+transaction.getTransactionID());
 
 						} else if (message.getMessageID() == MessageTypes.READ_REQUEST) {
 							transaction = new Transaction();
-							System.out.println("READ_REQUEST --"+ message);
+							System.err.println("READ_REQUEST");
 							oos.writeObject(transaction.read(message.getAccountNumber()));
 							oos.flush();
 						} else if (message.getMessageID() == MessageTypes.WRITE_REQUEST) {
-							 System.out.println("WRITE REQUEST " + message); 
-		                      transaction.write( message.getAccountNumber(),  message.getAmount());
-		        
-						}
-						else if (message.getMessageID() == MessageTypes.CLOSE_TRANSACTION) {
-							System.out.println("CLOSE REQUEST + " + message); 
-							
+							System.err.println("WRITE REQUEST");
+							transaction.write(message.getAccountNumber(), message.getAmount());
+
+						} else if (message.getMessageID() == MessageTypes.CLOSE_TRANSACTION) {
+							System.err.println("CLOSE REQUEST");
+
+							oos.flush();
 							oos.close();
 							ois.close();
 							client.close();
 							break;
-							
-							
+
 						}
 					}
 
 				} catch (ClassNotFoundException | IOException e) {
-					
+
 					e.printStackTrace();
+				} finally {
+
 				}
-				
-				
-			
+
 			}
-			
-			lock.unlock();
-			
-	 }
+
+			TransactionServer.lockManager.setUnlock();
+
+		}
 	}
 
 }

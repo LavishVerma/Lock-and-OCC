@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import transaction.server.account.Account;
 import transaction.server.account.AccountManager;
+import transaction.server.lock.LockManager;
 import transaction.server.transaction.Transaction;
 import transaction.server.transaction.TransactionManager;
 import transaction.util.PropertyHandler;
@@ -19,12 +20,13 @@ public class TransactionServer implements Runnable {
 
 	public static AccountManager accountManager = null;
 	public static TransactionManager transactionManager = null;
+	public static LockManager lockManager = null;
 
 	public static ServerSocket serverSocket = null;
 
 	static boolean keepgoing = true;
 
-	static boolean transactionView = true;
+	static boolean isLockingEnabled = true;
 
 	static int messageCount = 0;
 
@@ -36,12 +38,14 @@ public class TransactionServer implements Runnable {
 
 		properties = PropertyHandler.readProperties();
 
-		transactionView = Boolean.valueOf(properties.getProperty("TRANSACTION_VIEW"));
+		
+		isLockingEnabled = Boolean.valueOf(properties.getProperty("LOCKING_ENABLED"));
 		TransactionServer.transactionManager = new TransactionManager();
 
 		numberAccounts = Integer.parseInt(properties.getProperty("NUMBER_ACCOUNTS"));
 		initialBalance = Integer.parseInt(properties.getProperty("INITIAL_BALANCE"));
-
+		
+		TransactionServer.lockManager = new LockManager(isLockingEnabled);
 		TransactionServer.accountManager = new AccountManager(numberAccounts, initialBalance);
 
 		try {
@@ -101,7 +105,6 @@ public class TransactionServer implements Runnable {
 		while (keepgoing) {
 			try {
 				transactionManager.runTransaction(serverSocket.accept());
-System.out.println("Work is done for one thread!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 			} catch (SocketException e) {
 				System.out.println("SocketException");

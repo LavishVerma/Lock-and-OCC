@@ -52,7 +52,7 @@ public class AccountManager {
 			}
 		}
 		System.out.println("WriteAccount balance -> " + balance);
-		System.out.println("Total Amount  -- " + getTotalAmountInBank());
+		System.out.println("Total Amount in the Bank  -- " + getTotalAmountInBank());
 		TransactionServer.accountManager.getAccounts();
 
 //		writeLock.unlock();

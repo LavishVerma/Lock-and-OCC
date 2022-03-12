@@ -1,13 +1,26 @@
 package transaction.server.lock;
 
-import java.util.Hashtable;
 
 public class LockManager {
 	
-	private Hashtable theLocks;
+	private boolean isLockingEnabled =false;
+	
+	public LockManager(boolean flag){
+		this.isLockingEnabled = flag;
+	}
+	
+	
+	
+	Lock lock = new Lock();
 	
 	public void setLock() {
-		Lock 
+		if(this.isLockingEnabled)
+		lock.acquire(); 
+	}
+	
+	public void setUnlock() {
+		if(this.isLockingEnabled)
+		lock.release();
 	}
 
 }

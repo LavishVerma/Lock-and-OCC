@@ -36,7 +36,7 @@ public class Transaction {
 		if (!readSet.contains(accountNumber)) {
 			readSet.add(accountNumber);
 		}
-		System.out.println();
+		System.out.println("Balance of Account Number " + accountNumber + " is " + balance);
 		return balance;
 	}
 
@@ -49,7 +49,8 @@ public class Transaction {
 		}
 		TransactionServer.accountManager.writeAccount(accountNumber, balance);
 		writeSet.put(accountNumber, balance);
-		System.out.println(TransactionServer.accountManager.getAccounts());
+		System.out.println("Writing "+ balance+" into Account Number -> "+ accountNumber);
+		
 		return accountNumber;
 	}
 	
