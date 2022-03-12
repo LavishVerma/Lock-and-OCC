@@ -73,30 +73,16 @@ public class TransactionServer implements Runnable {
 	}
 
 	public void printOutSummary() {
-		System.out.println("In printout summary");
-		StringBuffer abortedTransactionLogs = new StringBuffer();
+		System.out.println("PRINTOUT SUMMARY\n");
 
-		Iterator<Transaction> abortedTransactionIterator = TransactionServer.transactionManager.getAbortedtransactions().iterator();
-		Transaction abortedTransaction;
+		int total = TransactionServer.accountManager.getTotalAmountInBank();
+		
 
-		while (abortedTransactionIterator.hasNext()) {
-			abortedTransaction = abortedTransactionIterator.next();
-			abortedTransactionLogs.append(abortedTransaction.getLogs()).append("\n");
-
-		}
-		System.out.println(abortedTransactionLogs);
-
-		ArrayList<Account> accounts = TransactionServer.accountManager.getAccounts();
-		Iterator<Account> accountIterator = accounts.iterator();
-		Account account;
-		int total = 0;
-		while (accountIterator.hasNext()) {
-			account = accountIterator.next();
-			total += TransactionServer.accountManager.readAccount(account.getAccountNumber());
-
-		}
-
-		System.out.println("Total ----" + total + "\n\n");
+		System.out.println("Total Amount in the Bank -> " + total + "\n\n");
+		
+		TransactionServer.accountManager.getAccounts().stream().forEach(each -> {
+			System.out.println("(Account Number , Balance) ==> ("+ each.getAccountNumber() + " , " + each.getBalance()+")");
+		});
 	}
 
 	@Override
@@ -107,17 +93,17 @@ public class TransactionServer implements Runnable {
 				transactionManager.runTransaction(serverSocket.accept());
 
 			} catch (SocketException e) {
-				System.out.println("SocketException");
+				
 			} catch (IOException e) {
-				System.out.println("IOException");
+			
 			}
 		}
-
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(100);
 		} catch (InterruptedException ex) {
 
 		}
+		
 
 		printOutSummary();
 	}

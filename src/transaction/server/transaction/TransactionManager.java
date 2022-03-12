@@ -8,7 +8,12 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 
+import transaction.client.TransactionClient.TransactionThread;
 import transaction.common.Message;
 import transaction.common.MessageTypes;
 import transaction.server.TransactionServer;
@@ -110,6 +115,12 @@ public class TransactionManager {
 							client.close();
 							break;
 
+						} else if (message.getMessageID() == MessageTypes.SHUTDOWN) {
+
+							System.err.println("SHUTTING IT DOWN");
+							TransactionServer.shutdown();
+							isShutdown = true;
+							break;
 						}
 					}
 

@@ -5,9 +5,13 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 import transaction.common.Message;
 import transaction.common.MessageTypes;
@@ -55,7 +59,7 @@ public class TransactionClient extends Thread {
 		int transactionCounter;
 		Thread currentThread;
 
-		Socket dbConnection;
+		Socket dbConnection=null;
 		ObjectOutputStream writeToNet;
 
 		for (transactionCounter = 0; transactionCounter < numberTransaction; transactionCounter++) {
@@ -65,27 +69,54 @@ public class TransactionClient extends Thread {
 
 		Iterator<Thread> threadIterator = threads.iterator();
 
-		while (threadIterator.hasNext()) {
-			threadIterator.next().start();
-
-		}
-
-//		try {
-//			System.out.println("Socket is about to shut down at client");
-//			dbConnection = new Socket(host, port);
-//			writeToNet = new ObjectOutputStream(dbConnection.getOutputStream());
-//			writeToNet.writeObject(new Message(MessageTypes.SHUTDOWN));
-//			writeToNet.flush();
-//			dbConnection.close();
-//		} catch (IOException ex) {
-//			ex.printStackTrace();
+//		while (threadIterator.hasNext()) {
+//			threadIterator.next().start();
+//
 //		}
+//		while (threadIterator.hasNext()) {
+//			try {
+//				threadIterator.next().join();
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//
+//		}
+		
+		//Doing this to make the threads wait
+		CountDownLatch latch = new CountDownLatch(numberTransaction);
+	    ExecutorService executor = Executors.newCachedThreadPool();
+	    IntStream.range(0, numberTransaction).forEach(item -> executor.execute(new TransactionThread(latch)));
+	    executor.shutdown();
+
+	    try {
+	        latch.await();
+	    } catch(InterruptedException ex) {
+	        System.out.println(ex);
+	    }
+	
+
+		try {
+			System.out.println(" Closing Socket....");
+			dbConnection = new Socket(host, port);
+			writeToNet = new ObjectOutputStream(dbConnection.getOutputStream());
+			writeToNet.writeObject(new Message(MessageTypes.SHUTDOWN));
+			writeToNet.flush();
+			dbConnection.close();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
 
 	}
 
 	public class TransactionThread extends Thread {
-
+		private CountDownLatch latch;
 		int numberTransaction = 0;
+		
+		TransactionThread(){}
+		TransactionThread(CountDownLatch latch){
+			this.latch = latch;
+		}
 
 		@Override
 		public void run() {
@@ -136,7 +167,9 @@ public class TransactionClient extends Thread {
 
 				numberTransaction++;
 			} while (numberTransaction < this.numberTransaction);
+					
 
+	        this.latch.countDown();
 		}
 	}
 
