@@ -21,20 +21,7 @@ import transaction.server.TransactionServer;
 public class TransactionManager {
 
 	private static int transactionIdCounter = 1;
-	private ArrayList<Transaction> Abortedtransactions = new ArrayList<>();
-	private ArrayList<Transaction> Runningtransactions = new ArrayList<>();
-	private HashMap<Integer, Transaction> committedTransaction = new HashMap<>();
-
-	public boolean validateTransaction(Transaction transaction) {
-		return true;
-	}
-
-	public void writeTransaction(Transaction transaction) {
-	}
-
-	public ArrayList<Transaction> getAbortedtransactions() {
-		return Abortedtransactions;
-	}
+	
 
 	public int getTransactionIdCounter() {
 		return transactionIdCounter;
@@ -93,7 +80,7 @@ public class TransactionManager {
 						if (message.getMessageID() == MessageTypes.OPEN_TRANSACTION) {
 							System.err.println("OPEN_TRANSACTION");
 							transaction = new Transaction();
-							Runningtransactions.add(transaction);
+							
 							oos.writeObject(transaction.getTransactionID());
 							oos.flush();
 
